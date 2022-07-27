@@ -6,24 +6,24 @@ using UnityEngine.UI;
 public class Store : MonoBehaviour
 {
     float BaseStoreCost;
-    private float CurrentBalance;
+    //private float CurrentBalance;
     int StoreCount;
     public Text StoreCountText;
-    public Text CurrentBalanceText;
+    public Slider ProgressSlider;
     private float StoreTimer = 4f;
     private float CurrentTimer = 0;
     private bool StartTimer;
     private float BaseStoreProfit;
+    public gamemanager Gamemanager;
     
     // Start is called before the first frame update
     void Start()
     {
         
         StoreCount = 1;
-        CurrentBalance = 6.00f;
         BaseStoreCost = 1.50f;
         BaseStoreProfit = .50f;
-        CurrentBalanceText.text = CurrentBalance.ToString("C2");
+
         StartTimer = false;
     }
 
@@ -33,28 +33,29 @@ public class Store : MonoBehaviour
         if (StartTimer)
         {
             CurrentTimer += Time.deltaTime;
+        
+            if (CurrentTimer > StoreTimer)
+            {
+                Debug.Log("Timer has ended.  Reset.");
+                StartTimer = false;
+                CurrentTimer = 0f;
+                Gamemanager.AddToBalance(BaseStoreProfit * StoreCount);
+                
+            }
         }
-
-        if (CurrentTimer > StoreTimer)
-        {
-            Debug.Log("Timer has ended.  Reset.");
-            StartTimer = false;
-            CurrentTimer = 0f;
-            CurrentBalance += BaseStoreProfit * StoreCount;
-            CurrentBalanceText.text = CurrentBalance.ToString("C2");
-        }
+        
+        ProgressSlider.value = CurrentTimer / StoreTimer;
     }
 
     public void BuyStoreOnClick()
     {
-        if (BaseStoreCost > CurrentBalance) { return; }
+        if (!Gamemanager.CanBuy(BaseStoreCost)) { return; }
         
         StoreCount++;
         Debug.Log(StoreCount);
         StoreCountText.text = StoreCount.ToString();
-        CurrentBalance = CurrentBalance - BaseStoreCost;
-        CurrentBalanceText.text = CurrentBalance.ToString("C2");
-        Debug.Log(CurrentBalance);
+        Gamemanager.AddToBalance(-BaseStoreCost);
+        
     }
 
     public void StoreOnClick()
